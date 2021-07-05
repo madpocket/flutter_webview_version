@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'dart:async';
 
@@ -15,23 +17,26 @@ class MyApp extends StatefulWidget {
 
 class _MyAppState extends State<MyApp> {
   String _webviewVersion = 'Unknown';
+  String? _version = "";
+  String? _name = "";
 
   @override
   void initState() {
     super.initState();
-    initWebviewVersion();
+    if(Platform.isAndroid) {
+      initWebviewVersion();
+    }
   }
 
   Future<void> initWebviewVersion() async {
     String webviewVersion;
     try {
-      final version = await WebviewVersion.getWebviewVersion;
-      final name = await WebviewVersion.getWebViewPackage;
-      webviewVersion = "$name:$version";
+      _version = await WebviewVersion.getWebviewVersion;
+      _name = await WebviewVersion.getWebViewPackage;
+      webviewVersion = "$_name:$_version";
     } on PlatformException {
       webviewVersion = 'Failed to get webview version.';
     }
-
     // If the widget was removed from the tree while the asynchronous platform
     // message was in flight, we want to discard the reply rather than calling
     // setState to update our non-existent appearance.
@@ -50,7 +55,22 @@ class _MyAppState extends State<MyApp> {
           title: const Text('Plugin example app'),
         ),
         body: Center(
-          child: Text('Running on: $_webviewVersion\n'),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              Text('Running on: $_webviewVersion\n'),
+              OutlinedButton(
+                onPressed: () {
+                  final package = _name;
+                  if(package != null) {
+                    WebviewVersion.startGooglePlay(package);
+                  }
+                },
+                child: Text('Open Google Play'),
+              ),
+            ],
+          )
+            ,
         ),
       ),
     );
